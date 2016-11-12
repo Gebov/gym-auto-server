@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -18,7 +17,6 @@ namespace Gym.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public IActionResult Get()
         {
             var response = new

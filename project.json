@@ -11,6 +11,7 @@
     "Microsoft.AspNetCore.Authorization": "1.0.0",
     "Microsoft.AspNetCore.Mvc": "1.0.1",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0",
+    "Microsoft.AspNetCore.Cors": "1.0.0",
     "Newtonsoft.Json": "9.0.1"
   },
   "frameworks": {

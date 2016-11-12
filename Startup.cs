@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Diagnostics;
 using System;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
 
 namespace WebApplication1
 {
@@ -26,7 +27,9 @@ namespace WebApplication1
                 app.UseDeveloperExceptionPage();
             }
             
-            
+            // TODO: make configurations
+            // app.UseCors("AllowSpecificOrigin");
+
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -52,17 +55,25 @@ namespace WebApplication1
             });
 
             app.UseMvc();
+            app.UseCors("AllowFrontend");
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
+            services.AddCors(options =>
+            {
+                // TODO: fix policies
+                options.AddPolicy("AllowFrontend",
+                    builder => builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+            });
             services.AddMvc(config =>
             {
                 var policy = new AuthorizationPolicyBuilder()
                                 .RequireAuthenticatedUser()
                                 .Build();
                                 
+                config.Filters.Add(new CorsAuthorizationFilterFactory("AllowFrontend"));
                 config.Filters.Add(new AuthorizeFilter(policy));
             });
 

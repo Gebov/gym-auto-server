@@ -39,13 +39,13 @@ namespace WebApiJwtAuthDemo.Controllers
             var identity = await this.GetClaimsIdentity(applicationUser);
             if (identity == null)
             {
-                _logger.LogInformation($"Invalid username ({applicationUser.UserName}) or password ({applicationUser.Password})");
+                _logger.LogInformation($"Invalid username ({applicationUser.Email}) or password ({applicationUser.Password})");
                 return BadRequest("Invalid credentials");
             }
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, applicationUser.UserName),
+                new Claim(JwtRegisteredClaimNames.Sub, applicationUser.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
                 new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64)
             }; // identity.FindFirst("DisneyCharacter")
@@ -117,9 +117,9 @@ namespace WebApiJwtAuthDemo.Controllers
             // }
 
             // DON'T do this in production, obviously!
-            if (user.UserName == "TEST" && user.Password == "TEST123")
+            if (user.Email == "admin@admin.com" && user.Password == "admin@2")
             {
-                return Task.FromResult(new ClaimsIdentity(new GenericIdentity(user.UserName, "Token"), new Claim[] { }));
+                return Task.FromResult(new ClaimsIdentity(new GenericIdentity(user.Email, "Token"), new Claim[] { }));
             }
 
             // Credentials are invalid, or account doesn't exist
