@@ -1,20 +1,35 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Builder;
 
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Mvc;
 using Gym.Auth.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Diagnostics;
 using System;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
+using Gym.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Diagnostics;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace WebApplication1
 {
+    public class ErrorDto
+    {
+        public int Code { get; set; }
+        public string Message { get; set; }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+    }
+
     public class Startup
     {
         private static readonly string secretKey = "mysupersecret_secretkey!123";
@@ -29,7 +44,28 @@ namespace WebApplication1
             
             // TODO: make configurations
             // app.UseCors("AllowSpecificOrigin");
+            app.UseExceptionHandler(errorApp => 
+            {
+                errorApp.Run(async context => 
+                {
+                    context.Response.StatusCode = 500; // or another Status accordingly to Exception Type
+                    context.Response.ContentType = "application/json";
 
+                    var error = context.Features.Get<IExceptionHandlerFeature>();
+                    if (error != null)
+                    {
+                        var ex = error.Error;
+
+                        await context.Response.WriteAsync(new ErrorDto()
+                        {
+                            Code = 2,
+                            Message = ex.Message
+                        }.ToString(), Encoding.UTF8);
+                    }
+                });
+            });
+
+            app.UseIdentity();
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -54,12 +90,27 @@ namespace WebApplication1
                 TokenValidationParameters = tokenValidationParameters
             });
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "api/{controller}/{action}");
+            });
+
             app.UseCors("AllowFrontend");
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddIdentity<ApplicationUser, IdentityRole>(options => 
+            {
+               options.Password.RequiredLength = 7;
+               options.Password.RequireUppercase = false;
+               options.User.RequireUniqueEmail = true;
+            }).AddEntityFrameworkStores<GymContext>();
+
+            services.AddEntityFrameworkInMemoryDatabase();
+            services.AddDbContext<GymContext>(x => x.UseInMemoryDatabase());
             services.AddOptions();
             services.AddCors(options =>
             {
@@ -83,15 +134,6 @@ namespace WebApplication1
                 options.Audience = "ExampleAudience";
                 options.SigningCredentials = new SigningCredentials(this.signingKey, SecurityAlgorithms.HmacSha256);
             });
-
-            // services.AddMvc(config =>
-            // {
-            //     var policy = new AuthorizationPolicyBuilder()
-            //                     .RequireAuthenticatedUser()
-            //                     .Build();
-
-            //     config.Filters.Add(new AuthorizeFilter(policy));
-            // });
         }
     }
 }

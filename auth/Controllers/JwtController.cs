@@ -4,43 +4,54 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Gym.Auth.Model;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebApiJwtAuthDemo.Controllers
 {
-    [Route("api/[controller]")]
+    // [Route("api/[controller]")]
     public class JwtController : Controller
     {
         private readonly JwtIssuerOptions _jwtOptions;
         private readonly ILogger _logger;
         private readonly JsonSerializerSettings _serializerSettings;
-
-        public JwtController(IOptions<JwtIssuerOptions> jwtOptions, ILoggerFactory loggerFactory)
+        private readonly SignInManager<ApplicationUser> signInManager;
+        
+        private readonly UserManager<ApplicationUser> userManager;
+        public JwtController(
+            IOptions<JwtIssuerOptions> jwtOptions, 
+            ILoggerFactory loggerFactory, 
+            UserManager<ApplicationUser> userManager, 
+            SignInManager<ApplicationUser> signInManager)
         {
-            _jwtOptions = jwtOptions.Value;
+            this._jwtOptions = jwtOptions.Value;
             ThrowIfInvalidOptions(_jwtOptions);
 
-            _logger = loggerFactory.CreateLogger<JwtController>();
-
-            _serializerSettings = new JsonSerializerSettings
+            this._logger = loggerFactory.CreateLogger<JwtController>();
+            
+            this._serializerSettings = new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented
             };
+
+            this.signInManager = signInManager;
+            this.userManager = userManager;
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Get([FromBody]ApplicationUser applicationUser)
+        public async Task<IActionResult> Login([FromBody]LoginViewModel applicationUser)
         {
             var identity = await this.GetClaimsIdentity(applicationUser);
             if (identity == null)
             {
-                _logger.LogInformation($"Invalid username ({applicationUser.Email}) or password ({applicationUser.Password})");
-                return BadRequest("Invalid credentials");
+                // _logger.LogInformation($"Invalid username ({applicationUser.Email}) or password ({applicationUser.Password})");
+                return base.BadRequest("Invalid credentials");
             }
 
             var claims = new[]
@@ -48,7 +59,7 @@ namespace WebApiJwtAuthDemo.Controllers
                 new Claim(JwtRegisteredClaimNames.Sub, applicationUser.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
                 new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64)
-            }; // identity.FindFirst("DisneyCharacter")
+            };
 
             // Create the JWT security token and encode it.
             var jwt = new JwtSecurityToken(
@@ -103,27 +114,29 @@ namespace WebApiJwtAuthDemo.Controllers
         /// You'd want to retrieve claims through your claims provider
         /// in whatever way suits you, the below is purely for demo purposes!
         /// </summary>
-        private Task<ClaimsIdentity> GetClaimsIdentity(ApplicationUser user)
+        private async Task<ClaimsIdentity> GetClaimsIdentity(LoginViewModel model)
         {
-            // if (user.UserName == "MickeyMouse" &&
-            //     user.Password == "MickeyMouseIsBoss123")
-            // {
-            //     return Task.FromResult(new ClaimsIdentity(
-            //       new GenericIdentity(user.UserName, "Token"),
-            //       new[]
-            //       {
-            // new Claim("DisneyCharacter", "IAmMickey")
-            //       }));
-            // }
-
-            // DON'T do this in production, obviously!
-            if (user.Email == "admin@admin.com" && user.Password == "admin@2")
+            var appUser = await this.userManager.FindByEmailAsync(model.Email);
+            if (appUser == null)
             {
-                return Task.FromResult(new ClaimsIdentity(new GenericIdentity(user.Email, "Token"), new Claim[] { }));
-            }
+                appUser = new ApplicationUser()
+                {
+                    Email = model.Email,
+                    UserName = model.Email
+                };
 
-            // Credentials are invalid, or account doesn't exist
-            return Task.FromResult<ClaimsIdentity>(null);
+                var createResult = await this.userManager.CreateAsync(appUser, model.Password);
+                if (!createResult.Succeeded) 
+                {
+                    throw new InvalidOperationException($"Unable to create user - {createResult.Errors.First().Description}");
+                }
+            };
+            
+            var result = await this.signInManager.PasswordSignInAsync(appUser, model.Password, false, false);
+            if (!result.Succeeded)
+                return null;
+
+            return (ClaimsIdentity)this.User.Identity;
         }
     }
 }
