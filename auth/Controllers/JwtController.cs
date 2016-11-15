@@ -7,7 +7,6 @@ using System;
 using System.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using Gym.Auth.Model;
 using Microsoft.AspNetCore.Identity;
@@ -118,20 +117,23 @@ namespace WebApiJwtAuthDemo.Controllers
         {
             var appUser = await this.userManager.FindByEmailAsync(model.Email);
             if (appUser == null)
-            {
-                appUser = new ApplicationUser()
-                {
-                    Email = model.Email,
-                    UserName = model.Email
-                };
+                throw new InvalidOperationException($"No user with sucn an email - {model.Email}");
 
-                var createResult = await this.userManager.CreateAsync(appUser, model.Password);
-                if (!createResult.Succeeded) 
-                {
-                    throw new InvalidOperationException($"Unable to create user - {createResult.Errors.First().Description}");
-                }
-            };
-            
+            // if (appUser == null)
+            // {
+            //     appUser = new ApplicationUser()
+            //     {
+            //         Email = model.Email,
+            //         UserName = model.Email
+            //     };
+
+            //     var createResult = await this.userManager.CreateAsync(appUser, model.Password);
+            //     if (!createResult.Succeeded) 
+            //     {
+            //         throw new InvalidOperationException($"Unable to create user - {createResult.Errors.First().Description}");
+            //     }
+            // };
+
             var result = await this.signInManager.PasswordSignInAsync(appUser, model.Password, false, false);
             if (!result.Succeeded)
                 return null;

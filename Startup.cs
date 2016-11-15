@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebApplication1
 {
@@ -98,6 +98,8 @@ namespace WebApplication1
             });
 
             app.UseCors("AllowFrontend");
+
+            this.SeedDatabase(app);
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -134,6 +136,20 @@ namespace WebApplication1
                 options.Audience = "ExampleAudience";
                 options.SigningCredentials = new SigningCredentials(this.signingKey, SecurityAlgorithms.HmacSha256);
             });
+        }
+
+        private void SeedDatabase(IApplicationBuilder app) 
+        {
+            var context = app.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
+            {
+                var adminUser = new ApplicationUser()
+                {
+                    Email = "admin@admin.com",
+                    UserName = "admin"
+                };
+
+                context.CreateAsync(adminUser, "admin@2");
+            }
         }
     }
 }
