@@ -1,8 +1,8 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+
 namespace Gym.Auth.Model
 {
-    public class ApplicationUser
+    public class ApplicationUser : IdentityUser
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
     }
 }
