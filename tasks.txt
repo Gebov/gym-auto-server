@@ -1,0 +1,19 @@
+Login - DONE
+Logout - DONE
+Registration - DONE
+Error handling
+User management screen
+Current user component
+Logging
+
+implement proper JWTS (SHOULD)
+return json by default (or make it configurable) - DONE
+Login with FB (SHOULD)
+Email confirmation (SHOULD), requires SMTP server
+Tests (SHOULD)
+StyleCop (should)
+Add username, first name & last name to registration (SHOULD)
+
+Document
+ORM
+Https

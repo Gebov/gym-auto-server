@@ -1,44 +1,26 @@
-using Gym.Data;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System.Linq;
 using Microsoft.AspNetCore.Authorization;
+using System;
 
 namespace Gym.Controllers
 {
-    [Route("api/[controller]")]
     public class TestController : Controller
     {
-        private readonly JsonSerializerSettings _serializerSettings;
-        private readonly GymContext _context;
-
-        public TestController(GymContext context)
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Date()
         {
-            _serializerSettings = new JsonSerializerSettings
+            return this.Ok(new
             {
-                Formatting = Formatting.Indented
-            };
-            
-            this._context = context;
+                DateProp = DateTime.UtcNow
+            });
         }
 
         [HttpGet]
-        [AllowAnonymous]
-        public IActionResult Get()
+        public IActionResult Hello()
         {
-            // var user = this._context.Users.First(x => x.Email == "admin@admin.com");
-            // var response = new
-            // {
-            //     message = $"Hello {user.Email}!"
-            // };
-
-            var response = new
-            {
-                message = $"Hello world!"
-            };
-
-            var json = JsonConvert.SerializeObject(response, _serializerSettings);
-            return new OkObjectResult(json);
+            var message = $"Hello {this.User.Identity.Name}";
+            return this.Ok(message);
         }
     }
 }

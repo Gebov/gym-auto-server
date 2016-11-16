@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Diagnostics;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Gym.Mvc;
+using Newtonsoft.Json.Serialization;
 
 namespace WebApplication1
 {
@@ -66,29 +68,6 @@ namespace WebApplication1
             });
 
             app.UseIdentity();
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidIssuer = "ExampleIssuer",
-
-                ValidateAudience = true,
-                ValidAudience = "ExampleAudience",
-
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = signingKey,
-
-                RequireExpirationTime = true,
-                ValidateLifetime = true,
-
-                ClockSkew = TimeSpan.Zero
-            };
-
-            app.UseJwtBearerAuthentication(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                TokenValidationParameters = tokenValidationParameters
-            });
 
             app.UseMvc(routes =>
             {
@@ -109,6 +88,8 @@ namespace WebApplication1
                options.Password.RequiredLength = 7;
                options.Password.RequireUppercase = false;
                options.User.RequireUniqueEmail = true;
+
+               options.Cookies.ApplicationCookie.AutomaticChallenge = false;
             }).AddEntityFrameworkStores<GymContext>();
 
             services.AddEntityFrameworkInMemoryDatabase();
@@ -120,6 +101,7 @@ namespace WebApplication1
                 options.AddPolicy("AllowFrontend",
                     builder => builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
             });
+
             services.AddMvc(config =>
             {
                 var policy = new AuthorizationPolicyBuilder()
@@ -128,13 +110,8 @@ namespace WebApplication1
                                 
                 config.Filters.Add(new CorsAuthorizationFilterFactory("AllowFrontend"));
                 config.Filters.Add(new AuthorizeFilter(policy));
-            });
 
-            services.Configure<JwtIssuerOptions>(options =>
-            {
-                options.Issuer = "ExampleIssuer";
-                options.Audience = "ExampleAudience";
-                options.SigningCredentials = new SigningCredentials(this.signingKey, SecurityAlgorithms.HmacSha256);
+                config.Conventions.Add(new FromBodyModelBindingConvention());
             });
         }
 
