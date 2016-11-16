@@ -11,22 +11,22 @@ namespace Gym.Mvc.Filters
             if (!actionContext.ModelState.IsValid)
                 throw new InvalidModelException("Invalid model", actionContext.ModelState);
         }
+    }
 
-        private class InvalidModelException : Exception
+    internal class InvalidModelException : Exception
+    {
+        private ModelStateDictionary modelState;
+        public InvalidModelException(string message, ModelStateDictionary modelState)
+            : base(message)
         {
-            private ModelStateDictionary modelState;
-            public InvalidModelException(string message, ModelStateDictionary modelState)
-                : base(message)
-            {
-                this.modelState = modelState;
-            }
+            this.modelState = modelState;
+        }
 
-            public ModelStateDictionary ModelState
+        public ModelStateDictionary ModelState
+        {
+            get
             {
-                get
-                {
-                    return this.modelState;
-                }
+                return this.modelState;
             }
         }
     }

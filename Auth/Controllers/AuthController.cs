@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Gym.Auth.Model;
 using Microsoft.AspNetCore.Identity;
@@ -41,7 +40,7 @@ namespace Gym.Auth.Controllers
         public async Task<IActionResult> Logout()
         {
             await this.signInManager.SignOutAsync();
-            
+
             return this.Ok();
         }
 
@@ -56,17 +55,17 @@ namespace Gym.Auth.Controllers
 
             await this.signInManager.SignInAsync(user, false);
 
-            return this.Ok();    
+            return this.Ok();
         }
+    }
 
-        private class IdentityException : SecurityException
+    internal class IdentityException : SecurityException
+    {
+        private IEnumerable<IdentityError> errors;
+        public IdentityException(string message, IEnumerable<IdentityError> errors)
+            : base(message)
         {
-            private IEnumerable<IdentityError> errors;
-            public IdentityException(string message, IEnumerable<IdentityError> errors)
-                : base (message)
-            {
-                this.errors = errors;
-            }
+            this.errors = errors;
         }
     }
 }

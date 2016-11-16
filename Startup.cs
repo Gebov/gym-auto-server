@@ -1,71 +1,27 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 
-using Microsoft.IdentityModel.Tokens;
 using Gym.Auth.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Hosting;
-using System;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Gym.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Diagnostics;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Gym.Mvc;
-using Newtonsoft.Json.Serialization;
+using Gym.Core.Exceptions;
+using Microsoft.Extensions.Logging;
 
-namespace WebApplication1
+namespace Gym
 {
-    public class ErrorDto
-    {
-        public int Code { get; set; }
-        public string Message { get; set; }
-
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this);
-        }
-    }
-
     public class Startup
     {
-        private static readonly string secretKey = "mysupersecret_secretkey!123";
-        private SymmetricSecurityKey signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey));
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            loggerFactory.AddConsole(true);
             
-            // TODO: make configurations
-            // app.UseCors("AllowSpecificOrigin");
-            app.UseExceptionHandler(errorApp => 
-            {
-                errorApp.Run(async context => 
-                {
-                    context.Response.StatusCode = 500; // or another Status accordingly to Exception Type
-                    context.Response.ContentType = "application/json";
-
-                    var error = context.Features.Get<IExceptionHandlerFeature>();
-                    if (error != null)
-                    {
-                        var ex = error.Error;
-
-                        await context.Response.WriteAsync(new ErrorDto()
-                        {
-                            Code = 2,
-                            Message = ex.Message
-                        }.ToString(), Encoding.UTF8);
-                    }
-                });
-            });
+            app.UseMiddleware(typeof(ExceptionHandlingMiddleware));
 
             app.UseIdentity();
 
