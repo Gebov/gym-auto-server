@@ -2,7 +2,7 @@ Login - DONE
 Logout - DONE
 Registration - DONE
 Error handling - DONE
-Logging
+Logging - DONE
 User management screen
 Current user component
 
