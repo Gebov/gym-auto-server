@@ -57,6 +57,20 @@ namespace Gym.Auth.Controllers
 
             return this.Ok();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Current()
+        {
+            var user = await this.userManager.GetUserAsync(this.User);
+            
+            var response = new 
+            {
+                username = user.UserName,
+                email = user.Email
+            };
+
+            return this.Ok(response);
+        }
     }
 
     internal class IdentityException : SecurityException
