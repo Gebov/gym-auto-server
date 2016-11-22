@@ -1,0 +1,18 @@
+Login - DONE
+Logout - DONE
+Registration - DONE
+Error handling - DONE
+Logging - DONE
+User management screen
+Current user component - DONE
+Security wrapper component/directive based on permissions
+
+implement proper JWTS (SHOULD)
+return json by default (or make it configurable) - DONE
+Login with FB (SHOULD)
+Email confirmation (SHOULD), requires SMTP server
+Tests (SHOULD)
+StyleCop (should)
+Add username, first name & last name to registration (SHOULD)
+Detailed serialized exceptions with json - DONE
+Exception status code mapping - DONE

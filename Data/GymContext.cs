@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Data
 {
-    public class GymContext : IdentityDbContext<ApplicationUser>
+    internal class GymContext : IdentityDbContext<ApplicationUser>
     {
         public GymContext(DbContextOptions<GymContext> options)
             : base(options)

@@ -1,94 +1,30 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 
 using Microsoft.IdentityModel.Tokens;
 using Gym.Auth.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Hosting;
-using System;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Gym.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Diagnostics;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Gym.Mvc;
+using Gym.Core.Exceptions;
+using Microsoft.Extensions.Logging;
 
-namespace WebApplication1
+namespace Gym
 {
-    public class ErrorDto
-    {
-        public int Code { get; set; }
-        public string Message { get; set; }
-
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this);
-        }
-    }
-
     public class Startup
     {
-        private static readonly string secretKey = "mysupersecret_secretkey!123";
-        private SymmetricSecurityKey signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey));
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            
-            // TODO: make configurations
-            // app.UseCors("AllowSpecificOrigin");
-            app.UseExceptionHandler(errorApp => 
-            {
-                errorApp.Run(async context => 
-                {
-                    context.Response.StatusCode = 500; // or another Status accordingly to Exception Type
-                    context.Response.ContentType = "application/json";
+            loggerFactory.AddConsole(true);
 
-                    var error = context.Features.Get<IExceptionHandlerFeature>();
-                    if (error != null)
-                    {
-                        var ex = error.Error;
-
-                        await context.Response.WriteAsync(new ErrorDto()
-                        {
-                            Code = 2,
-                            Message = ex.Message
-                        }.ToString(), Encoding.UTF8);
-                    }
-                });
-            });
+            app.UseMiddleware(typeof(ExceptionHandlingMiddleware));
 
             app.UseIdentity();
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidIssuer = "ExampleIssuer",
-
-                ValidateAudience = true,
-                ValidAudience = "ExampleAudience",
-
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = signingKey,
-
-                RequireExpirationTime = true,
-                ValidateLifetime = true,
-
-                ClockSkew = TimeSpan.Zero
-            };
-
-            app.UseJwtBearerAuthentication(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                TokenValidationParameters = tokenValidationParameters
-            });
 
             app.UseMvc(routes =>
             {
@@ -104,11 +40,17 @@ namespace WebApplication1
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddIdentity<ApplicationUser, IdentityRole>(options => 
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-               options.Password.RequiredLength = 7;
-               options.Password.RequireUppercase = false;
-               options.User.RequireUniqueEmail = true;
+                // TODO: should be configured for production
+                options.Password.RequiredLength = 0;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireDigit = false;
+                
+                options.Password.RequireUppercase = false;
+                options.User.RequireUniqueEmail = true;
+
+                options.Cookies.ApplicationCookie.AutomaticChallenge = false;
             }).AddEntityFrameworkStores<GymContext>();
 
             services.AddEntityFrameworkInMemoryDatabase();
@@ -120,25 +62,21 @@ namespace WebApplication1
                 options.AddPolicy("AllowFrontend",
                     builder => builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
             });
+
             services.AddMvc(config =>
             {
                 var policy = new AuthorizationPolicyBuilder()
                                 .RequireAuthenticatedUser()
                                 .Build();
-                                
+
                 config.Filters.Add(new CorsAuthorizationFilterFactory("AllowFrontend"));
                 config.Filters.Add(new AuthorizeFilter(policy));
-            });
 
-            services.Configure<JwtIssuerOptions>(options =>
-            {
-                options.Issuer = "ExampleIssuer";
-                options.Audience = "ExampleAudience";
-                options.SigningCredentials = new SigningCredentials(this.signingKey, SecurityAlgorithms.HmacSha256);
+                config.Conventions.Add(new FromBodyModelBindingConvention());
             });
         }
 
-        private void SeedDatabase(IApplicationBuilder app) 
+        private void SeedDatabase(IApplicationBuilder app)
         {
             var context = app.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
             {
