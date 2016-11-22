@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
+using Microsoft.IdentityModel.Tokens;
 using Gym.Auth.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
