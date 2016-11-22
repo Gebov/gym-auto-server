@@ -20,7 +20,7 @@ namespace Gym
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(true);
-            
+
             app.UseMiddleware(typeof(ExceptionHandlingMiddleware));
 
             app.UseIdentity();
@@ -39,13 +39,17 @@ namespace Gym
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddIdentity<ApplicationUser, IdentityRole>(options => 
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-               options.Password.RequiredLength = 7;
-               options.Password.RequireUppercase = false;
-               options.User.RequireUniqueEmail = true;
+                // TODO: should be configured for production
+                options.Password.RequiredLength = 0;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireDigit = false;
+                
+                options.Password.RequireUppercase = false;
+                options.User.RequireUniqueEmail = true;
 
-               options.Cookies.ApplicationCookie.AutomaticChallenge = false;
+                options.Cookies.ApplicationCookie.AutomaticChallenge = false;
             }).AddEntityFrameworkStores<GymContext>();
 
             services.AddEntityFrameworkInMemoryDatabase();
@@ -63,7 +67,7 @@ namespace Gym
                 var policy = new AuthorizationPolicyBuilder()
                                 .RequireAuthenticatedUser()
                                 .Build();
-                                
+
                 config.Filters.Add(new CorsAuthorizationFilterFactory("AllowFrontend"));
                 config.Filters.Add(new AuthorizeFilter(policy));
 
@@ -71,7 +75,7 @@ namespace Gym
             });
         }
 
-        private void SeedDatabase(IApplicationBuilder app) 
+        private void SeedDatabase(IApplicationBuilder app)
         {
             var context = app.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
             {

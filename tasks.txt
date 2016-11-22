@@ -4,7 +4,8 @@ Registration - DONE
 Error handling - DONE
 Logging - DONE
 User management screen
-Current user component
+Current user component - DONE
+Security wrapper component/directive based on permissions
 
 implement proper JWTS (SHOULD)
 return json by default (or make it configurable) - DONE
@@ -13,8 +14,5 @@ Email confirmation (SHOULD), requires SMTP server
 Tests (SHOULD)
 StyleCop (should)
 Add username, first name & last name to registration (SHOULD)
-Detailed serialized exceptions with json
-Exception status code mapping
-Document
-ORM
-Https
+Detailed serialized exceptions with json - DONE
+Exception status code mapping - DONE

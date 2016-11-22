@@ -48,7 +48,7 @@ namespace Gym.Auth.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+            var user = new ApplicationUser { UserName = model.Username, Email = model.Email };
             var createResult = await this.userManager.CreateAsync(user, model.Password);
             if (!createResult.Succeeded)
                 throw new IdentityException("Unable to register user.", createResult.Errors);
