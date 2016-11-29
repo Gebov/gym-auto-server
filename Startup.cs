@@ -96,7 +96,17 @@ namespace Gym
             };
 
             userManager.CreateAsync(adminUser, "admin@2").Wait();
+
+            var teacherUser = new ApplicationUser()
+            {
+                Email = "teacher@admin.com",
+                UserName = "teacher"
+            };
+
+            userManager.CreateAsync(teacherUser, "admin@2").Wait();
+
             userManager.AddToRoleAsync(adminUser, rolesArr[0]).Wait(); // admin
+            userManager.AddToRoleAsync(teacherUser, rolesArr[1]).Wait();
         }
     }
 }
