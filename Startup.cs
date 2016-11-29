@@ -78,16 +78,25 @@ namespace Gym
 
         private void SeedDatabase(IApplicationBuilder app)
         {
-            var context = app.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = app.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
+            var rolesArr = new [] { "Administrator", "Teacher" };
+            
+            foreach (var roleName in rolesArr)
             {
-                var adminUser = new ApplicationUser()
-                {
-                    Email = "admin@admin.com",
-                    UserName = "admin"
-                };
-
-                context.CreateAsync(adminUser, "admin@2");
+                var roleObj = new IdentityRole(roleName);
+                roleManager.CreateAsync(roleObj).Wait();
             }
+
+            var userManager = app.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
+            
+            var adminUser = new ApplicationUser()
+            {
+                Email = "admin@admin.com",
+                UserName = "admin"
+            };
+
+            userManager.CreateAsync(adminUser, "admin@2").Wait();
+            userManager.AddToRoleAsync(adminUser, rolesArr[0]).Wait(); // admin
         }
     }
 }

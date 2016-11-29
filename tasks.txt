@@ -6,6 +6,8 @@ Logging - DONE
 User management screen
 Current user component - DONE
 Security wrapper component/directive based on permissions
+User grid
+Roles
 
 implement proper JWTS (SHOULD)
 return json by default (or make it configurable) - DONE

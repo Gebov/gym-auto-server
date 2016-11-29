@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Gym.Auth.Model;
 using Microsoft.AspNetCore.Identity;
@@ -62,11 +63,13 @@ namespace Gym.Auth.Controllers
         public async Task<IActionResult> Current()
         {
             var user = await this.userManager.GetUserAsync(this.User);
+            var roles = await this.userManager.GetRolesAsync(user);
             
             var response = new 
             {
                 username = user.UserName,
-                email = user.Email
+                email = user.Email,
+                roles = roles
             };
 
             return this.Ok(response);
