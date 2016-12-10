@@ -79,7 +79,7 @@ namespace Gym
         private void SeedDatabase(IApplicationBuilder app)
         {
             var roleManager = app.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
-            var rolesArr = new [] { "Administrator", "Teacher" };
+            var rolesArr = new [] { RoleConstants.Administrator, RoleConstants.Teacher };
             
             foreach (var roleName in rolesArr)
             {
@@ -105,8 +105,8 @@ namespace Gym
 
             userManager.CreateAsync(teacherUser, "admin@2").Wait();
 
-            userManager.AddToRoleAsync(adminUser, rolesArr[0]).Wait(); // admin
-            userManager.AddToRoleAsync(teacherUser, rolesArr[1]).Wait();
+            userManager.AddToRoleAsync(adminUser, RoleConstants.Administrator).Wait(); // admin
+            userManager.AddToRoleAsync(teacherUser, RoleConstants.Teacher).Wait();
         }
     }
 }

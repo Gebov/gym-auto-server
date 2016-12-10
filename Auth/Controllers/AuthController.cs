@@ -74,6 +74,55 @@ namespace Gym.Auth.Controllers
 
             return this.Ok(response);
         }
+
+        [HttpGet]
+        [AuthorizeRolesAttribute(RoleConstants.Administrator)]
+        public async Task<IActionResult> Users()
+        {
+            // TODO: should return 403
+            var users = this.userManager.Users;
+            var totalCount = users.Count();
+
+            // TODO: optimize
+            var roleMap = new Dictionary<string, IList<string>>();
+            foreach (var user in users)
+            {
+                var roles = await this.userManager.GetRolesAsync(user);
+                roleMap.Add(user.Id, roles);
+            }
+            
+            var response = new UsersResponse(users, roleMap, totalCount);
+            
+            return this.Ok(response);
+        }
+
+        public class UsersResponse
+        {
+            public UsersResponse(IEnumerable<ApplicationUser> users, IDictionary<string, IList<string>> roles, int totalCount)
+            {
+                this.TotalCount = totalCount;
+                this.Data = users.Select(x => new UserResponse(x, roles[x.Id]));
+            }
+
+            public IEnumerable<UserResponse> Data { get; private set; } 
+            public int TotalCount { get; private set; }
+
+            public class UserResponse
+            {
+                public UserResponse(ApplicationUser user, IList<string> roles)
+                {
+                    this.Username = user.UserName;
+                    this.Email = user.Email;
+                    this.Roles = roles;
+                }
+
+                public string Username { get; private set; }
+
+                public string Email { get; private set; }
+
+                public IList<string> Roles { get; private set; }
+            }
+        }
     }
 
     internal class IdentityException : SecurityException
