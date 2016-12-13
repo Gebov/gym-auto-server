@@ -30,7 +30,7 @@ namespace Gym
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "api/{controller}/{action}");
+                    template: "api/{controller}/{action}/{id?}");
             });
 
             app.UseCors("AllowFrontend");
