@@ -1,18 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Gym.Auth.Model;
 using Microsoft.AspNetCore.Identity;
-using Gym.Mvc.Filters;
 using System.Security;
 using System.Collections.Generic;
 
 namespace Gym.Auth.Controllers
 {
-    [ValidateModel]
-    // [Route("[controller]")]
+    [ApiRoute("[controller]/[action]")]
     public class AuthController : Controller
     {
         private readonly SignInManager<ApplicationUser> signInManager;
@@ -77,97 +74,6 @@ namespace Gym.Auth.Controllers
             };
 
             return this.Ok(response);
-        }
-
-        [HttpGet]
-        [AuthorizeRolesAttribute(RoleConstants.Administrator)]
-        public async Task<IActionResult> Users()
-        {
-            // TODO: should return 403
-            // TODO: support for paging and filtering
-            var users = this.userManager.Users;
-            var totalCount = users.Count();
-
-            // TODO: optimize
-            var roleMap = new Dictionary<string, IList<string>>();
-            foreach (var user in users)
-            {
-                var roles = await this.userManager.GetRolesAsync(user);
-                roleMap.Add(user.Id, roles);
-            }
-
-            var response = new UsersResponse(users, roleMap, totalCount);
-
-            return this.Ok(response);
-        }
-
-        [HttpDelete]
-        [AuthorizeRolesAttribute(RoleConstants.Administrator)]
-        public async Task<IActionResult> DeleteUser(string id)
-        {
-            var user = await this.userManager.FindByEmailAsync(id);
-            if (user != null)
-            {
-                await this.userManager.DeleteAsync(user);
-                return this.NoContent();
-            }
-
-            return this.NotFound();
-        }
-
-        [HttpPatch]
-        [AuthorizeRolesAttribute(RoleConstants.Administrator)]
-        public async Task<IActionResult> UpdateUser(string id, UserResponse data)
-        {
-            var user = await this.userManager.FindByEmailAsync(id);
-            if (user != null)
-            {
-                var userRoles = await this.userManager.GetRolesAsync(user);
-
-                foreach (var role in userRoles) {
-                    if (!data.Roles.Contains(role)) {
-                        await this.userManager.RemoveFromRoleAsync(user, role);
-                    }
-                }
-
-                foreach (var role in data.Roles)
-                {
-                    if (!userRoles.Contains(role))
-                        await this.userManager.AddToRoleAsync(user, role);
-                }
-                
-                return this.NoContent();
-            }
-
-            return this.NotFound();
-        }
-
-        public class UsersResponse
-        {
-            public UsersResponse(IEnumerable<ApplicationUser> users, IDictionary<string, IList<string>> roles, int totalCount)
-            {
-                this.TotalCount = totalCount;
-                this.Data = users.Select(x => new UserResponse(x, roles[x.Id]));
-            }
-
-            public IEnumerable<UserResponse> Data { get; private set; }
-            public int TotalCount { get; private set; }
-        }
-
-        public class UserResponse
-        {
-            public UserResponse(ApplicationUser user, IList<string> roles)
-            {
-                this.Username = user.UserName;
-                this.Email = user.Email;
-                this.Roles = roles;
-            }
-
-            public string Username { get; private set; }
-
-            public string Email { get; private set; }
-
-            public IList<string> Roles { get; private set; }
         }
     }
 

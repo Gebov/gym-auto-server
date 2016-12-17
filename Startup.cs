@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
-
-using Microsoft.IdentityModel.Tokens;
 using Gym.Auth.Model;
+using Gym.Mvc.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,9 +27,13 @@ namespace Gym
 
             app.UseMvc(routes =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "api/{controller}/{action}/{id?}");
+                // routes.MapRoute(
+                //     name: "default",
+                //     template: "api/{controller}/{action}");
+
+                // routes.MapRoute(
+                //     name: "api",
+                //     template: "api/{controller}");
             });
 
             app.UseCors("AllowFrontend");
@@ -71,7 +74,7 @@ namespace Gym
 
                 config.Filters.Add(new CorsAuthorizationFilterFactory("AllowFrontend"));
                 config.Filters.Add(new AuthorizeFilter(policy));
-
+                config.Filters.Add(new ValidateModelFilter());
                 config.Conventions.Add(new FromBodyModelBindingConvention());
             });
         }
@@ -79,7 +82,7 @@ namespace Gym
         private void SeedDatabase(IApplicationBuilder app)
         {
             var roleManager = app.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
-            var rolesArr = new [] { RoleConstants.Administrator, RoleConstants.Teacher };
+            var rolesArr = new [] { RoleConstants.Administrator, RoleConstants.Teacher, RoleConstants.Student };
             
             foreach (var roleName in rolesArr)
             {

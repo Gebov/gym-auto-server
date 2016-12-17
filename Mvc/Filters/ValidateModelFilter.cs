@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Gym.Mvc.Filters
 {
-    public class ValidateModelAttribute : ActionFilterAttribute
+    public class ValidateModelFilter : ActionFilterAttribute
     {
         public override void OnActionExecuting(ActionExecutingContext actionContext)
         {
