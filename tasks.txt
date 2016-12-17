@@ -3,9 +3,11 @@ Logout - DONE
 Registration - DONE
 Error handling - DONE
 Logging - DONE
-User management screen
 Current user component - DONE
-Security wrapper component/directive based on permissions
+User grid - DONE
+Security wrapper component/directive based on permissions 
+Roles
+
 
 implement proper JWTS (SHOULD)
 return json by default (or make it configurable) - DONE

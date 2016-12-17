@@ -4,13 +4,12 @@ using System;
 using System.Threading.Tasks;
 using Gym.Auth.Model;
 using Microsoft.AspNetCore.Identity;
-using Gym.Mvc.Filters;
 using System.Security;
 using System.Collections.Generic;
 
 namespace Gym.Auth.Controllers
 {
-    [ValidateModel]
+    [ApiRoute("[controller]/[action]")]
     public class AuthController : Controller
     {
         private readonly SignInManager<ApplicationUser> signInManager;
@@ -29,7 +28,7 @@ namespace Gym.Auth.Controllers
             if (appUser == null)
                 throw new InvalidOperationException("Wrong email or password");
 
-            var result = await this.signInManager.PasswordSignInAsync(appUser, model.Password, false, false);
+            var result = await this.signInManager.PasswordSignInAsync(appUser, model.Password, model.IsPersistent, false);
             if (!result.Succeeded)
                 throw new InvalidOperationException("Wrong email or password");
 
@@ -62,11 +61,16 @@ namespace Gym.Auth.Controllers
         public async Task<IActionResult> Current()
         {
             var user = await this.userManager.GetUserAsync(this.User);
-            
-            var response = new 
+            if (user == null)
+                return this.NoContent();
+
+            var roles = await this.userManager.GetRolesAsync(user);
+
+            var response = new
             {
                 username = user.UserName,
-                email = user.Email
+                email = user.Email,
+                roles = roles
             };
 
             return this.Ok(response);
