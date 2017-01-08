@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Gym.Auth.Model;
 using Gym.Mvc.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -12,6 +11,8 @@ using Microsoft.AspNetCore.Identity;
 using Gym.Mvc;
 using Gym.Core.Exceptions;
 using Microsoft.Extensions.Logging;
+using Gym.Data.Users.Model;
+using Gym.Data.Products.Cards.Model;
 
 namespace Gym
 {
@@ -63,7 +64,7 @@ namespace Gym
             {
                 // TODO: fix policies
                 options.AddPolicy("AllowFrontend",
-                    builder => builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+                    builder => builder.WithOrigins("http://localhost:3000", "http://localhost").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
             });
 
             services.AddMvc(config =>
@@ -108,8 +109,32 @@ namespace Gym
 
             userManager.CreateAsync(teacherUser, "admin@2").Wait();
 
+
+            var studentUser = new ApplicationUser()
+            {
+                Email = "student@admin.com",
+                UserName = "student"
+            };
+
+            userManager.CreateAsync(studentUser, "admin@2").Wait();
+
             userManager.AddToRoleAsync(adminUser, RoleConstants.Administrator).Wait(); // admin
             userManager.AddToRoleAsync(teacherUser, RoleConstants.Teacher).Wait();
+            userManager.AddToRoleAsync(studentUser, RoleConstants.Student).Wait();
+
+
+            var cardTypeRegular = new CardType()
+            {
+                Title = "Regular",
+                VisitCount = 15,
+                Price = 100
+            };
+
+             var dbContext = app.ApplicationServices.GetRequiredService<GymContext>();
+
+             dbContext.CardTypes.Add(cardTypeRegular);
+
+             dbContext.SaveChanges();
         }
     }
 }

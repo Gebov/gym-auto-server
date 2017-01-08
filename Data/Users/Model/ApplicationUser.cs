@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-namespace Gym.Auth.Model
+namespace Gym.Data.Users.Model
 {
     public class ApplicationUser : IdentityUser
     {
