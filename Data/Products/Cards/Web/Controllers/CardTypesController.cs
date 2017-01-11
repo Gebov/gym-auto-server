@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Gym.Data.Contracts.Dto;
 using Gym.Data.Products.Cards.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,9 +21,10 @@ namespace Gym.Data.Products.Cards.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var cards = this.context.CardTypes.Where(x => !x.Archived);
-            
-            return this.Ok(cards);
+            var cards = this.context.CardTypes;
+            var response = new CollectionResponse<CardType>(cards, cards.Count());
+
+            return await Task.FromResult(this.Ok(response));
         }
         
         [HttpGet("{id}")]
