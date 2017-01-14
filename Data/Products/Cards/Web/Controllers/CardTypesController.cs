@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gym.Data.Contracts.Dto;
@@ -21,8 +22,15 @@ namespace Gym.Data.Products.Cards.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var cards = this.context.CardTypes;
-            var response = new CollectionResponse<CardType>(cards, cards.Count());
+            var cardTypes = this.context.CardTypes;
+            var responseArr = new List<CardTypeResponse>();
+            foreach (var cardType in cardTypes)
+            {
+                var hasCards = this.context.Cards.Any(y => y.Type.Id == cardType.Id);
+                responseArr.Add(new CardTypeResponse(cardType, hasCards));
+            }
+
+            var response = new CollectionResponse<CardType>(responseArr, responseArr.Count);
 
             return await Task.FromResult(this.Ok(response));
         }
@@ -31,11 +39,11 @@ namespace Gym.Data.Products.Cards.Web.Controllers
         public async Task<IActionResult> Get(Guid id)
         {
             var cardType = this.context.CardTypes.FirstOrDefault(x => x.Id == id);
-
+            var hasCards = this.context.Cards.Any(x => x.Type.Id == cardType.Id);
             if (cardType == null)
                 return this.NotFound();
             
-            return this.Ok(cardType);
+            return this.Ok(new CardTypeResponse(cardType, hasCards));
         }
 
         [HttpPatch("{id}")]
@@ -67,6 +75,19 @@ namespace Gym.Data.Products.Cards.Web.Controllers
             await this.context.SaveChangesAsync();
             
             return this.Created(this.GetLocation(this.Request, cardType), cardType);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var cardType = this.context.CardTypes.FirstOrDefault(x => x.Id == id);
+            if (cardType == null) 
+                return this.NotFound();
+
+            this.context.Remove(cardType);
+            await this.context.SaveChangesAsync();
+
+            return this.NoContent();         
         }
 
         private Uri GetLocation(HttpRequest request, IDataItem item)

@@ -13,6 +13,7 @@ using Gym.Core.Exceptions;
 using Microsoft.Extensions.Logging;
 using Gym.Data.Users.Model;
 using Gym.Data.Products.Cards.Model;
+using System;
 
 namespace Gym
 {
@@ -50,7 +51,7 @@ namespace Gym
                 options.Password.RequiredLength = 0;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireDigit = false;
-                
+
                 options.Password.RequireUppercase = false;
                 options.User.RequireUniqueEmail = true;
 
@@ -83,8 +84,8 @@ namespace Gym
         private void SeedDatabase(IApplicationBuilder app)
         {
             var roleManager = app.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
-            var rolesArr = new [] { RoleConstants.Administrator, RoleConstants.Teacher, RoleConstants.Student };
-            
+            var rolesArr = new[] { RoleConstants.Administrator, RoleConstants.Teacher, RoleConstants.Student };
+
             foreach (var roleName in rolesArr)
             {
                 var roleObj = new IdentityRole(roleName);
@@ -92,7 +93,7 @@ namespace Gym
             }
 
             var userManager = app.ApplicationServices.GetRequiredService<UserManager<ApplicationUser>>();
-            
+
             var adminUser = new ApplicationUser()
             {
                 Email = "admin@admin.com",
@@ -130,11 +131,30 @@ namespace Gym
                 Price = 100
             };
 
-             var dbContext = app.ApplicationServices.GetRequiredService<GymContext>();
+            var dbContext = app.ApplicationServices.GetRequiredService<GymContext>();
 
-             dbContext.CardTypes.Add(cardTypeRegular);
+            dbContext.CardTypes.Add(cardTypeRegular);
 
-             dbContext.SaveChanges();
+            var cardTypesChildren = new CardType()
+            {
+                Title = "Children",
+                VisitCount = 15,
+                Price = 100
+            };
+
+            dbContext.CardTypes.Add(cardTypesChildren);
+
+            var card = new Card()
+            {
+                User = studentUser,
+                Type = cardTypesChildren,
+                DateCreated = DateTime.UtcNow,
+                Validity = TimeSpan.FromDays(30 * 3)
+            };
+
+            dbContext.Cards.Add(card);
+
+            dbContext.SaveChanges();
         }
     }
 }

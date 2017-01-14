@@ -18,7 +18,8 @@ namespace Gym.Data.Products.Cards.Model
         public byte Validity { get; set; }
 
         [Required]
-        [DataType(DataType.Currency)]   
+        [DataType(DataType.Currency)] 
+        [Range(0, long.MaxValue)]  
         public decimal Price { get; set; }
     }
 }

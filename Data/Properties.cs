@@ -15,9 +15,6 @@ namespace Gym.Data
             var isIDataItem = typeof(IDataItem).IsAssignableFrom(source.GetType());
             foreach (PropertyDescriptor sourceProp in sourceProperties)
             {   
-                if (isIDataItem && sourceProp.Name == nameof(IDataItem.Id))
-                    continue;
-
                 var targetProp = targetProperties.Find(sourceProp.Name, false);
 
                 if (!Type.Equals(sourceProp.PropertyType, targetProp.PropertyType))
