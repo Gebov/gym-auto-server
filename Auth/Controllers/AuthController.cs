@@ -2,10 +2,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using Gym.Auth.Model;
 using Microsoft.AspNetCore.Identity;
 using System.Security;
 using System.Collections.Generic;
+using Gym.Data.Users.Model;
+using Gym.Auth.Model;
 
 namespace Gym.Auth.Controllers
 {

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
-using Gym.Auth.Model;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
+using Gym.Data.Users.Model;
 
 // TODO: should return 403
 // TODO: support for paging and filtering
