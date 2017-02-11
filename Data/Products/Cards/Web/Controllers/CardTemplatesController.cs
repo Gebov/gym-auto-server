@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Gym.Data.Contracts.Dto;
 using Gym.Data.Products.Cards.Model;
+using Gym.Data.Products.Cards.Web.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +12,10 @@ namespace Gym.Data.Products.Cards.Web.Controllers
 {
     [AuthorizeRolesAttribute(RoleConstants.Administrator)]
     [ApiRoute("[controller]")]
-    public class CardTypesController : Controller
+    public class CardTemplatesController : Controller
     {
         private GymContext context;
-        public CardTypesController(GymContext context)
+        public CardTemplatesController(GymContext context)
         {
             this.context = context;
         }
@@ -22,15 +23,15 @@ namespace Gym.Data.Products.Cards.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var cardTypes = this.context.CardTypes;
+            var cardTypes = this.context.CardTemplates;
             var responseArr = new List<CardTypeResponse>();
             foreach (var cardType in cardTypes)
             {
-                var hasCards = this.context.Cards.Any(y => y.Type.Id == cardType.Id);
+                var hasCards = this.context.Cards.Any(y => y.TemplateId == cardType.Id);
                 responseArr.Add(new CardTypeResponse(cardType, hasCards));
             }
 
-            var response = new CollectionResponse<CardType>(responseArr, responseArr.Count);
+            var response = new CollectionResponse<CardTemplate>(responseArr, responseArr.Count);
 
             return await Task.FromResult(this.Ok(response));
         }
@@ -38,8 +39,8 @@ namespace Gym.Data.Products.Cards.Web.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            var cardType = this.context.CardTypes.FirstOrDefault(x => x.Id == id);
-            var hasCards = this.context.Cards.Any(x => x.Type.Id == cardType.Id);
+            var cardType = this.context.CardTemplates.FirstOrDefault(x => x.Id == id);
+            var hasCards = this.context.Cards.Any(x => x.TemplateId == cardType.Id);
             if (cardType == null)
                 return this.NotFound();
             
@@ -49,7 +50,7 @@ namespace Gym.Data.Products.Cards.Web.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> Patch(Guid id, CardTypePatchRequest data)
         {
-            var cardType = this.context.CardTypes.FirstOrDefault(x => x.Id == id);
+            var cardType = this.context.CardTemplates.FirstOrDefault(x => x.Id == id);
 
             if (cardType == null)
                 return this.NotFound();
@@ -68,7 +69,7 @@ namespace Gym.Data.Products.Cards.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(CardTypeRequest data)
         {
-            var cardType = new CardType();
+            var cardType = new CardTemplate();
             Properties.Copy(data, cardType);
             this.context.Add(cardType);
             
@@ -80,7 +81,7 @@ namespace Gym.Data.Products.Cards.Web.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var cardType = this.context.CardTypes.FirstOrDefault(x => x.Id == id);
+            var cardType = this.context.CardTemplates.FirstOrDefault(x => x.Id == id);
             if (cardType == null) 
                 return this.NotFound();
 

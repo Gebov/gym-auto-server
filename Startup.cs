@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Gym.Data.Users.Model;
 using Gym.Data.Products.Cards.Model;
 using System;
+using Gym.Data.Visits.Model;
 
 namespace Gym
 {
@@ -124,7 +125,7 @@ namespace Gym
             userManager.AddToRoleAsync(studentUser, RoleConstants.Student).Wait();
 
 
-            var cardTypeRegular = new CardType()
+            var cardTypeRegular = new CardTemplate()
             {
                 Title = "Regular",
                 VisitCount = 15,
@@ -133,26 +134,33 @@ namespace Gym
 
             var dbContext = app.ApplicationServices.GetRequiredService<GymContext>();
 
-            dbContext.CardTypes.Add(cardTypeRegular);
+            dbContext.CardTemplates.Add(cardTypeRegular);
 
-            var cardTypesChildren = new CardType()
+            var cardTypesChildren = new CardTemplate()
             {
                 Title = "Children",
                 VisitCount = 15,
                 Price = 100
             };
 
-            dbContext.CardTypes.Add(cardTypesChildren);
+            dbContext.CardTemplates.Add(cardTypesChildren);
 
             var card = new Card()
             {
-                User = studentUser,
-                Type = cardTypesChildren,
-                DateCreated = DateTime.UtcNow,
-                Validity = TimeSpan.FromDays(30 * 3)
+                UserId = studentUser.Id,
+                TemplateId = cardTypesChildren.Id,
+                DateCreated = DateTime.UtcNow
             };
 
             dbContext.Cards.Add(card);
+
+            var visit = new Visit()
+            {
+                DateCreated = DateTime.UtcNow,
+                CardId = card.Id
+            };
+
+            dbContext.Visits.Add(visit);
 
             dbContext.SaveChanges();
         }

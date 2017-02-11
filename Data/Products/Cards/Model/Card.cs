@@ -1,22 +1,21 @@
 using System;
-using Gym.Data.Users.Model;
 
 namespace Gym.Data.Products.Cards.Model
 {
-    public class Card : IDataItem, ISellable, IOwned
+    public class Card
     {
         public Guid Id { get; set; }
 
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }
 
-        public bool Paid { get; set; }
-
-        public ApplicationUser User { get; set; }
+        public string UserId { get; set; }
 
         public DateTime DateCreated { get; set; }
 
-        public TimeSpan Validity { get; set; }
-        
-        public CardType Type { get; set; }
+        public DateTime DayPaid { get; set; }
+
+        public bool Paid { get; set; }
+       
+        public Guid TemplateId { get; set; }
     }
 }
