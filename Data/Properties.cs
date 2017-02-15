@@ -17,10 +17,21 @@ namespace Gym.Data
             {   
                 var targetProp = targetProperties.Find(sourceProp.Name, false);
 
-                if (!Type.Equals(sourceProp.PropertyType, targetProp.PropertyType))
-                    continue;
-
                 var sourceVal = sourceProp.GetValue(source);
+                
+                if (!Type.Equals(sourceProp.PropertyType, targetProp.PropertyType))
+                {
+                    var convertor = targetProp.Converter;
+                    if (convertor.CanConvertFrom(sourceProp.PropertyType))
+                    {
+                        sourceVal = convertor.ConvertFrom(sourceVal);
+                    }
+                    else 
+                    {
+                        continue;
+                    }
+                }
+
                 var targetVal = targetProp.GetValue(target);
 
                 if (object.Equals(sourceVal, targetVal))

@@ -11,11 +11,9 @@ namespace Gym.Data
     {
         public DbSet<Card> Cards { get; set; }
 
-        public DbSet<CardType> CardTypes { get; set; }
+        public DbSet<CardTemplate> CardTemplates { get; set; }
 
-        public DbSet<CardVisit> Visits { get; set; }
-
-        public DbSet<SingleVisit> SingleVisits { get; set; }
+        public DbSet<Visit> Visits { get; set; }
 
         public GymContext(DbContextOptions<GymContext> options)
             : base(options)

@@ -2,7 +2,7 @@ using System;
 
 namespace Gym.Data.Products.Cards.Model
 {
-    public class CardType : IDataItem, IPriced, IArchived
+    public class CardTemplate : IDataItem, IPriced, IArchived
     {
         public Guid Id { get; set; }
 
